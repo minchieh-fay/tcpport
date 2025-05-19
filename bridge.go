@@ -33,7 +33,9 @@ func (b *Bridge) StartBridge() {
 		NextProtos:         []string{"quic-tunnel"},
 	}
 	// QUIC配置
-	quicConfig := &quic.Config{}
+	quicConfig := &quic.Config{
+		MaxIdleTimeout: 2 * time.Minute, // 空闲 2 分钟后断开
+	}
 	// quic 连接
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel() // 确保释放资源
@@ -54,6 +56,7 @@ func (b *Bridge) StartBridge() {
 		time.Sleep(3 * time.Second)
 		os.Exit(1)
 	}
+	log.Printf("bridge创建心跳流成功")
 	b.conn = quicConn
 	b.hearbeatStream = heartbeatStream
 	// 启动心跳检测

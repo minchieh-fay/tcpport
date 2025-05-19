@@ -35,7 +35,9 @@ func (p *Proxy) StartProxy() {
 	// 生成TLS配置
 	tlsConfig := GenerateTLSConfig()
 	// 设置QUIC配置
-	quicConfig := &quic.Config{}
+	quicConfig := &quic.Config{
+		MaxIdleTimeout: 2 * time.Minute, // 空闲 2 分钟后断开
+	}
 
 	log.Printf("Proxy: 开始启动QUIC监听器于端口: %d", p.quicport)
 	log.Printf("端口使用的是udp协议，做端口映射的时候请注意")
@@ -70,6 +72,7 @@ func (p *Proxy) acceptConnections() {
 
 		oldconn := p.conn
 		p.conn = conn
+		p.lastHeartbeat = time.Now()
 		if oldconn != nil {
 			oldconn.CloseWithError(quic.ApplicationErrorCode(0), "old connection")
 			p.heartbeatStream = nil
@@ -83,12 +86,14 @@ func (p *Proxy) handleConnection() {
 			time.Sleep(1 * time.Second)
 			continue
 		}
+		log.Printf("Proxy AcceptStream")
 		stream, err := p.conn.AcceptStream(context.Background())
 		if err != nil || stream == nil {
 			log.Printf("Proxy AcceptStream error: %v", err)
 			time.Sleep(1 * time.Second)
 			continue
 		}
+		log.Printf("Proxy AcceptStream success")
 		p.heartbeatStream = stream
 
 		log.Printf("心跳流更新: %d", stream.StreamID())

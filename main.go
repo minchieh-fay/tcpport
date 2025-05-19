@@ -56,14 +56,23 @@ func init() {
 	log.Printf("TunPort: %d, TcpPort: %d, ServerAddr: %s, TargetAddr: %s", TunPort, TcpPort, ServerAddr, TargetAddr)
 }
 
+func test() {
+	TunPort = 5566
+	TcpPort = 5567
+	ServerAddr = "127.0.0.1:5566"
+	TargetAddr = "10.35.146.7:11001"
+}
+
 func main() {
 	// 设置单线程
 	runtime.GOMAXPROCS(1)
+	test()
 	if TunPort != 0 && TcpPort != 0 {
 		log.Printf("启动proxy模式")
 		proxy := NewProxy(TunPort, TcpPort)
 		proxy.StartProxy()
-	} else if ServerAddr != "" && TargetAddr != "" {
+	}
+	if ServerAddr != "" && TargetAddr != "" {
 		log.Printf("启动bridge模式")
 		bridge := NewBridge(ServerAddr, TargetAddr)
 		bridge.StartBridge()
