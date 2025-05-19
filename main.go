@@ -71,8 +71,7 @@ func main() {
 		log.Printf("启动proxy模式")
 		proxy := NewProxy(TunPort, TcpPort)
 		proxy.StartProxy()
-	}
-	if ServerAddr != "" && TargetAddr != "" {
+	} else if ServerAddr != "" && TargetAddr != "" {
 		log.Printf("启动bridge模式")
 		bridge := NewBridge(ServerAddr, TargetAddr)
 		bridge.StartBridge()
