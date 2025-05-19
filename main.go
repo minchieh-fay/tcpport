@@ -60,13 +60,13 @@ func test() {
 	TunPort = 5566
 	TcpPort = 5567
 	ServerAddr = "127.0.0.1:5566"
-	TargetAddr = "10.35.146.7:11001"
+	TargetAddr = "127.0.0.1:8000"
 }
 
 func main() {
 	// 设置单线程
 	runtime.GOMAXPROCS(1)
-	test()
+	//test()
 	if TunPort != 0 && TcpPort != 0 {
 		log.Printf("启动proxy模式")
 		proxy := NewProxy(TunPort, TcpPort)
