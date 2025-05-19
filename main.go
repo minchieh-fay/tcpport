@@ -77,4 +77,7 @@ func main() {
 		time.Sleep(10 * time.Second)
 		os.Exit(1)
 	}
+	for {
+		time.Sleep(1 * time.Second)
+	}
 }
