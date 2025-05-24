@@ -74,6 +74,9 @@ func (p *Proxy) acceptConnections() {
 		p.conn = conn
 		p.lastHeartbeat = time.Now()
 		if oldconn != nil {
+			if p.heartbeatStream != nil {
+				p.heartbeatStream.Close()
+			}
 			oldconn.CloseWithError(quic.ApplicationErrorCode(0), "old connection")
 			p.heartbeatStream = nil
 		}
@@ -163,16 +166,24 @@ func (p *Proxy) dotcp() {
 	}
 }
 
+var errcount = 0
+
 func (p *Proxy) handleTCP(conn net.Conn) {
 	// 创建stream 进行copy
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel() // 确保释放资源
 	stream, err := p.conn.OpenStreamSync(ctx)
 	if err != nil {
 		log.Printf("创建stream失败: %v", err)
 		conn.Close()
+		errcount++
+		if errcount > 3 {
+			log.Printf("创建stream失败 超过3次")
+			os.Exit(5)
+		}
 		return
 	}
+	errcount = 0
 	// 任意一个失败 关闭连接
 	done := make(chan bool)
 	go func() {
